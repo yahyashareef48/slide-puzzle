@@ -141,30 +141,12 @@ function mousePressed() {
 
   // First, ensure empty tile position is correct
   findAndUpdateEmptyTile();
-
   let possibleMoves = getPossibleMoves();
-
-  console.log("=== DETAILED DEBUG ===");
-  console.log("Empty tile at:", emptyTile);
-  console.log("Board value at empty position:", board[emptyTile.row][emptyTile.col]);
-
-  console.log("Possible moves with tile values:");
-  possibleMoves.forEach((move, index) => {
-    console.log(`Move ${index}: {row: ${move.row}, col: ${move.col}} -> Tile value: ${board[move.row][move.col]}`);
-  });
-
-  console.log("Clicked tile:", { row: clickedRow, col: clickedCol });
-  if (clickedRow >= 0 && clickedRow < size && clickedCol >= 0 && clickedCol < size) {
-    console.log("Clicked tile value:", board[clickedRow][clickedCol]);
-  }
 
   // Check if the clicked tile is adjacent to the empty tile
   if (isAdjacent(clickedRow, clickedCol)) {
-    console.log("Valid move - swapping!");
     swapWithEmpty(clickedRow, clickedCol);
     checkIfSolved();
-  } else {
-    console.log("Invalid move - not adjacent to empty tile");
   }
 }
 
@@ -187,8 +169,6 @@ function swapWithEmpty(row, col) {
 
   // Update empty tile position
   emptyTile = { row, col };
-
-  console.log("After swap - Empty tile moved to:", emptyTile);
 }
 
 function isAdjacent(row, col) {
@@ -214,20 +194,7 @@ function checkIfSolved() {
     }
   }
 
-  // If we get here, the puzzle is solved
-  solved = true;
-}
-
-// Add debug function
-function debugBoard() {
-  console.log("=== BOARD DEBUG ===");
-  console.log("Empty tile position:", emptyTile);
-  console.log("Board state:");
-  for (let i = 0; i < size; i++) {
-    console.log(board[i].join("\t"));
-  }
-  let possibleMoves = getPossibleMoves();
-  console.log("Possible moves:", possibleMoves);
+  // If we get here, the puzzle is solved  solved = true;
 }
 
 // Add reset button when key is pressed
@@ -235,8 +202,5 @@ function keyPressed() {
   if (key === "r" || key === "R") {
     initializeBoard();
     shuffleBoard(100);
-  }
-  if (key === "d" || key === "D") {
-    debugBoard();
   }
 }
