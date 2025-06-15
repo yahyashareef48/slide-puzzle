@@ -65,10 +65,11 @@ function shuffleBoard(moves) {
 
   for (let i = 0; i < moves; i++) {
     let possibleMoves = getPossibleMoves();
-    let randomMove = random(possibleMoves);
-
-    // Move a random tile adjacent to the empty space
-    swapWithEmpty(randomMove.row, randomMove.col);
+    if (possibleMoves.length > 0) {
+      let randomMove = random(possibleMoves);
+      // Move a random tile adjacent to the empty space
+      swapWithEmpty(randomMove.row, randomMove.col);
+    }
   }
 
   // Re-enable move checking
@@ -99,6 +100,9 @@ function getPossibleMoves() {
 }
 
 function drawBoard() {
+  // Get possible moves for visual indication
+  let possibleMoves = getPossibleMoves();
+
   for (let i = 0; i < size; i++) {
     for (let j = 0; j < size; j++) {
       const value = board[i][j];
@@ -106,8 +110,16 @@ function drawBoard() {
       // Don't draw the empty tile
       if (value === 0) continue;
 
-      // Draw the tile
-      fill(colors.tile);
+      // Check if this tile is a possible move
+      let isPossibleMove = possibleMoves.some((move) => move.row === i && move.col === j);
+
+      // Draw the tile with different color if it's a possible move
+      if (isPossibleMove) {
+        fill("#2196F3"); // Blue for possible moves
+      } else {
+        fill(colors.tile);
+      }
+
       stroke(colors.tileStroke);
       rect(j * tileSize, i * tileSize, tileSize, tileSize, 5);
 
@@ -127,11 +139,56 @@ function mousePressed() {
   const clickedRow = floor(mouseY / tileSize);
   const clickedCol = floor(mouseX / tileSize);
 
+  // First, ensure empty tile position is correct
+  findAndUpdateEmptyTile();
+
+  let possibleMoves = getPossibleMoves();
+
+  console.log("=== DETAILED DEBUG ===");
+  console.log("Empty tile at:", emptyTile);
+  console.log("Board value at empty position:", board[emptyTile.row][emptyTile.col]);
+
+  console.log("Possible moves with tile values:");
+  possibleMoves.forEach((move, index) => {
+    console.log(`Move ${index}: {row: ${move.row}, col: ${move.col}} -> Tile value: ${board[move.row][move.col]}`);
+  });
+
+  console.log("Clicked tile:", { row: clickedRow, col: clickedCol });
+  if (clickedRow >= 0 && clickedRow < size && clickedCol >= 0 && clickedCol < size) {
+    console.log("Clicked tile value:", board[clickedRow][clickedCol]);
+  }
+
   // Check if the clicked tile is adjacent to the empty tile
   if (isAdjacent(clickedRow, clickedCol)) {
+    console.log("Valid move - swapping!");
     swapWithEmpty(clickedRow, clickedCol);
     checkIfSolved();
+  } else {
+    console.log("Invalid move - not adjacent to empty tile");
   }
+}
+
+function findAndUpdateEmptyTile() {
+  for (let i = 0; i < size; i++) {
+    for (let j = 0; j < size; j++) {
+      if (board[i][j] === 0) {
+        emptyTile = { row: i, col: j };
+        return;
+      }
+    }
+  }
+}
+
+// REMOVE THE DUPLICATE - Keep only this one
+function swapWithEmpty(row, col) {
+  // Swap the clicked tile with the empty tile
+  board[emptyTile.row][emptyTile.col] = board[row][col];
+  board[row][col] = 0;
+
+  // Update empty tile position
+  emptyTile = { row, col };
+
+  console.log("After swap - Empty tile moved to:", emptyTile);
 }
 
 function isAdjacent(row, col) {
@@ -140,15 +197,6 @@ function isAdjacent(row, col) {
 
   // Check if adjacent to empty tile (horizontally or vertically)
   return (Math.abs(row - emptyTile.row) === 1 && col === emptyTile.col) || (Math.abs(col - emptyTile.col) === 1 && row === emptyTile.row);
-}
-
-function swapWithEmpty(row, col) {
-  // Swap the clicked tile with the empty tile
-  board[emptyTile.row][emptyTile.col] = board[row][col];
-  board[row][col] = 0;
-
-  // Update empty tile position
-  emptyTile = { row, col };
 }
 
 function checkIfSolved() {
@@ -170,10 +218,25 @@ function checkIfSolved() {
   solved = true;
 }
 
+// Add debug function
+function debugBoard() {
+  console.log("=== BOARD DEBUG ===");
+  console.log("Empty tile position:", emptyTile);
+  console.log("Board state:");
+  for (let i = 0; i < size; i++) {
+    console.log(board[i].join("\t"));
+  }
+  let possibleMoves = getPossibleMoves();
+  console.log("Possible moves:", possibleMoves);
+}
+
 // Add reset button when key is pressed
 function keyPressed() {
   if (key === "r" || key === "R") {
     initializeBoard();
     shuffleBoard(100);
+  }
+  if (key === "d" || key === "D") {
+    debugBoard();
   }
 }
