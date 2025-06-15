@@ -159,8 +159,6 @@ function mousePressed() {
     console.log(`New possible moves: ${possibleMoves.map((move) => `(${move.row},${move.col})`).join(", ")}`);
 
     checkIfSolved();
-  } else {
-    console.log(`Invalid move: tile at (${clickedRow}, ${clickedCol}) is not adjacent to empty space`);
   }
 }
 
