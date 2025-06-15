@@ -5,6 +5,7 @@ let tileSize;
 let emptyTile = { row: size - 1, col: size - 1 }; // Bottom right is initially empty
 let solved = false;
 let canMove = true;
+let showPossibleMoves = true; // Toggle for highlighting possible moves
 
 // Dark mode color scheme
 const colors = {
@@ -20,15 +21,23 @@ function setup() {
   let canvasSize = min(windowWidth * 0.8, windowHeight * 0.8, 500);
   createCanvas(canvasSize, canvasSize);
   tileSize = canvasSize / size;
-
   // Initialize the board
   initializeBoard();
   shuffleBoard(100); // 100 random moves to shuffle
+
+  // Log initial state
+  console.log("Slide puzzle initialized!");
+  console.log("Controls:");
+  console.log("- Click on tiles adjacent to empty space to move them");
+  console.log("- Press 'R' to reset and shuffle");
+  console.log("- Press 'H' to toggle possible move highlighting");
+  console.log(`Possible move highlighting is currently ${showPossibleMoves ? "enabled" : "disabled"}`);
 }
 
 function draw() {
   background(colors.background);
   drawBoard();
+  drawInstructions();
 
   // Display win message if solved
   if (solved) {
@@ -108,13 +117,11 @@ function drawBoard() {
       const value = board[i][j];
 
       // Don't draw the empty tile
-      if (value === 0) continue;
-
-      // Check if this tile is a possible move
+      if (value === 0) continue; // Check if this tile is a possible move
       let isPossibleMove = possibleMoves.some((move) => move.row === i && move.col === j);
 
-      // Draw the tile with different color if it's a possible move
-      if (isPossibleMove) {
+      // Draw the tile with different color if it's a possible move and highlighting is enabled
+      if (isPossibleMove && showPossibleMoves) {
         fill("#2196F3"); // Blue for possible moves
       } else {
         fill(colors.tile);
@@ -138,15 +145,22 @@ function mousePressed() {
   // Calculate which tile was clicked
   const clickedRow = floor(mouseY / tileSize);
   const clickedCol = floor(mouseX / tileSize);
-
   // First, ensure empty tile position is correct
   findAndUpdateEmptyTile();
-  let possibleMoves = getPossibleMoves();
 
   // Check if the clicked tile is adjacent to the empty tile
   if (isAdjacent(clickedRow, clickedCol)) {
+    const tileValue = board[clickedRow][clickedCol];
     swapWithEmpty(clickedRow, clickedCol);
+    console.log(`Moved tile ${tileValue} to position (${emptyTile.row}, ${emptyTile.col})`);
+
+    // Log possible moves AFTER the move is made
+    let possibleMoves = getPossibleMoves();
+    console.log(`New possible moves: ${possibleMoves.map((move) => `(${move.row},${move.col})`).join(", ")}`);
+
     checkIfSolved();
+  } else {
+    console.log(`Invalid move: tile at (${clickedRow}, ${clickedCol}) is not adjacent to empty space`);
   }
 }
 
@@ -193,14 +207,23 @@ function checkIfSolved() {
       }
     }
   }
+  // If we get here, the puzzle is solved
+  solved = true;
+  console.log("🎉 Puzzle solved! Congratulations!");
+}
 
-  // If we get here, the puzzle is solved  solved = true;
+function drawInstructions() {
+  // Function kept for future use if needed
 }
 
 // Add reset button when key is pressed
 function keyPressed() {
   if (key === "r" || key === "R") {
+    console.log("Resetting and shuffling the puzzle...");
     initializeBoard();
     shuffleBoard(100);
+  } else if (key === "h" || key === "H") {
+    showPossibleMoves = !showPossibleMoves;
+    console.log(`Possible move highlighting ${showPossibleMoves ? "enabled" : "disabled"}`);
   }
 }
